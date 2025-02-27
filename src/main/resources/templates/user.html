@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>User Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>User Information</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title" th:text="${user.name} + ' ' + ${user.lastName}"></h5>
+            <p class="card-text"><strong>Username:</strong> <span th:text="${user.username}"></span></p>
+            <p class="card-text"><strong>Name:</strong> <span th:text="${user.name}"></span></p>
+            <p class="card-text"><strong>Last Name:</strong> <span th:text="${user.lastName}"></span></p>
+            <p class="card-text"><strong>Age:</strong> <span th:text="${user.age}"></span></p>
+            <p class="card-text"><strong>Roles:</strong>
+                <th:block th:each="role : ${user.roles}">
+                    <span class="badge badge-info" th:text="${role.name}"></span>
+                </th:block>
+            </p>
+        </div>
+    </div>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="btn btn-link">Logout</button>
+    </form>
+</div>
+</body>
+</html>
