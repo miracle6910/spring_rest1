@@ -51,7 +51,7 @@ public class AdminRestController {
     @PutMapping("/users/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") Long id,
                                            @RequestBody User user) {
-        try {
+
             List<Long> roleIds = user.getRoles().stream()
                     .map(Role::getId)
                     .collect(Collectors.toList());
@@ -61,10 +61,6 @@ public class AdminRestController {
             User updatedUser = userService.getUserById(id);
 
             return ResponseEntity.ok(updatedUser);
-
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
     }
 
     @DeleteMapping("/users/{id}")
