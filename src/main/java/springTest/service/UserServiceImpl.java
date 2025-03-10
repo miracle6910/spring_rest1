@@ -12,6 +12,8 @@ import springTest.model.Role;
 import springTest.model.User;
 import springTest.repository.UserRepository;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -52,23 +54,19 @@ public class UserServiceImpl implements UserService {
     public void updateUser(Long id, User user, List<Long> roleIds) {
         user.setId(id);
 
-        User existingUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден с id: " + id));
 
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             user.setPassword(existingUser.getPassword());
         } else {
-
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        Set<Role> roles;
-        if (roleIds != null && !roleIds.isEmpty()) {
-            roles = roleService.getAllRoles().stream()
-                    .filter(role -> roleIds.contains(role.getId()))
-                    .collect(Collectors.toSet());
-        } else {
-            roles = existingUser.getRoles();
-        }
+        Set<Role> roles = roleService.getAllRoles().stream()
+                .filter(role -> roleIds.contains(role.getId()))
+                .collect(Collectors.toSet());
+
         user.setRoles(roles);
 
         userRepository.save(user);
@@ -83,7 +81,7 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
-
+    @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);

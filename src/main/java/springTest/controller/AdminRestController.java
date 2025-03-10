@@ -8,7 +8,11 @@ import springTest.model.User;
 import springTest.service.RoleService;
 import springTest.service.UserService;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -25,59 +29,55 @@ public class AdminRestController {
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
         User user = userService.getUserById(id);
         if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return ResponseEntity.ok(user);
     }
-
     @PostMapping("/users")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         userService.saveUser(user);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+
+        User createdUser = userService.getUserById(user.getId());
+        return ResponseEntity.status(201).body(createdUser);
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(
-            @PathVariable("id") Long id,
-            @RequestBody User user,
-            @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
-        userService.updateUser(id, user, roleIds);
-        User updatedUser = userService.getUserById(id);
-        if (updatedUser == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<User> updateUser(@PathVariable("id") Long id,
+                                           @RequestBody User user) {
+        try {
+            List<Long> roleIds = user.getRoles().stream()
+                    .map(Role::getId)
+                    .collect(Collectors.toList());
+
+            userService.updateUser(id, user, roleIds);
+
+            User updatedUser = userService.getUserById(id);
+
+            return ResponseEntity.ok(updatedUser);
+
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
-        User user = userService.getUserById(id);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(Collections.singletonMap("message", "Пользователь успешно удален")); // Вернуть объект JSON
     }
 
-    @GetMapping("/users/username/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable("username") String username) {
-        User user = userService.findByUsername(username);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
+
     @GetMapping("/roles")
     public ResponseEntity<List<Role>> getAllRoles() {
         List<Role> roles = roleService.getAllRoles();
-        return new ResponseEntity<>(roles, HttpStatus.OK);
+        return ResponseEntity.ok(roles);
     }
-}
 
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>User Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>User Information</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title" id="fullName"></h5>
+            <p class="card-text"><strong>Username:</strong> <span id="username"></span></p>
+            <p class="card-text"><strong>Name:</strong> <span id="name"></span></p>
+            <p class="card-text"><strong>Last Name:</strong> <span id="lastName"></span></p>
+            <p class="card-text"><strong>Age:</strong> <span id="age"></span></p>
+            <p class="card-text"><strong>Roles:</strong> <span id="roles"></span></p>
+        </div>
+    </div>
+    <form action="/logout" method="post">
+        <button type="submit" class="btn btn-link">Logout</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Fetch user data from the REST endpoint
+        fetch("/api/user")  // Replace with your actual REST endpoint
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(user => {
+                // Populate the HTML elements with the user data
+                document.getElementById("fullName").textContent = user.name + ' ' + user.lastName;
+                document.getElementById("username").textContent = user.username;
+                document.getElementById("name").textContent = user.name;
+                document.getElementById("lastName").textContent = user.lastName;
+                document.getElementById("age").textContent = user.age;
+
+                // Format the roles into a string of badges
+                const rolesContainer = document.getElementById("roles");
+                rolesContainer.innerHTML = user.roles.map(role => `<span class="badge badge-info">${role.name}</span>`).join(" ");
+            })
+            .catch(error => {
+                console.error("Error fetching user data:", error);
+                // Display an error message to the user if needed
+                const cardBody = document.querySelector(".card-body");
+                cardBody.innerHTML = `<p class="text-danger">Error loading user data. Please try again later.</p>`;
+            });
+    });
+</script>
+</body>
+</html>
