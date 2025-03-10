@@ -70,7 +70,7 @@ public class AdminRestController {
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok(Collections.singletonMap("message", "Пользователь успешно удален")); // Вернуть объект JSON
+        return ResponseEntity.ok(Collections.singletonMap("message", "Пользователь успешно удален"));
     }
 
 
